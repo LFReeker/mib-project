@@ -114,3 +114,5 @@ dloc.distr.top <- head(dloc.distr, 10)
 ## Close the connection
 mongo.disconnect(mongo)
 mongo.destroy(mongo)
+
+##praveen
