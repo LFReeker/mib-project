@@ -1,13 +1,30 @@
-rm(list = ls())
+### Authors: Subramaniam Balasubramaniam, William Liu, Praveen Kumar Thoranathula Radhesyam, Lars Reeker
+### Course: 95789 Mobile intelligence and Business
+### Institution: Carnegie Mellon Univeristy, Heinz College
 
+### Many thanks and credits to Truc Viet Le for sharing his code
+
+### Content:
+###   Step 1.1  Connect to the server 
+###   Step 1.2  Retrieve a sample of the raw data
+###   Step 1.3  Retrieve all unique users and their connections
+###   Step 1.4
+###   Step 1.5  Retrieve the celltower locations
+
+
+### Step 1.1
+############
+
+## Clear the environment
+rm(list = ls()) 
+
+## Load all necessary libraries
 library(rmongodb)
 library(ggplot2)
 library(scales)
 library(plyr)
 
-source("./code/util/fivethirtyeight_theme.R")
-
-## Login credentials
+## Login credentials to connect to data server
 host <- "heinz-tjle.heinz.cmu.edu"
 username <- "student"
 password <- "helloWorld"
@@ -22,35 +39,43 @@ mongo.is.connected(mongo)
 collection <- "cellular"
 namespace <- paste(db, collection, sep=".")
 
-## What's in MongoDB?
+## Check what's in the database
 mongo.get.databases(mongo)
 ## Take a look at the collections (tables) of one of the db's
 mongo.get.database.collections(mongo, db="admin")
 
+
+## Step 1.2
+###########
+
 ## Count the number of docs (rows) we have in a collection
 mongo.count(mongo, namespace)
 
-## Sample the data to see what we have
-(sample <- mongo.find.one(mongo, namespace))
-## Convert BSON object to a list
+## Get a sample the data to see how the data looks like
+sample <- mongo.find.one(mongo, namespace)
+sample
+## Convert data in BSON object to a list
 sample.list <- mongo.bson.to.list(sample)
+sample.list
+
 
 ## Define the query
 query <- mongo.bson.from.list(list('date'=20080301))
+query
 
 ## Define the fields to be returned
 fields <- mongo.bson.buffer.create()
-## '1L' means we want to turn this field on, '0L' to turn it off
+# '1L' means we want to turn this field on, '0L' to turn it off
 mongo.bson.buffer.append(fields, "cell_id", 1L)
 mongo.bson.buffer.append(fields, "caller_id", 1L)
 mongo.bson.buffer.append(fields, "callee_id", 1L)
 mongo.bson.buffer.append(fields, "_id", 0L)
-## Make object from buffer
+# Make object from buffer
 fields <- mongo.bson.from.buffer(fields)
 
 ## Create the query cursor, limit to 100 rows only
 cursor <- mongo.find(mongo, namespace, query=query, fields=fields, limit=100L)
-## Iterate over the cursor
+# Iterate over the cursor
 call.data <- data.frame(stringsAsFactors=FALSE)
 while(mongo.cursor.next(cursor)) {
   ## Iterate and grab the next record
@@ -61,14 +86,27 @@ while(mongo.cursor.next(cursor)) {
   ## Bind to the master data frame
   call.data <- rbind.fill(call.data, call.df)
 }
-## Release the resources attached to cursor on both client and server
+# Release the resources attached to cursor on both client and server
 done <- mongo.cursor.destroy(cursor)
 
+## Show the data in a dataframe
 call.data
 
-
-## Alternative:
+## Alternative: show the data in a list
 calls <- mongo.find.all(mongo, namespace, query=query, limit=100L)
+
+
+### Step 1.3
+############
+
+## Retrieve all unique users in the dataset
+
+
+
+
+
+### Step 1.5
+############
 
 ## Get the cell tower locations
 loc <- mongo.distinct(mongo, namespace, "cell_id")
@@ -98,6 +136,9 @@ dloc.distr <- as.data.frame(t(mloc.distr))
 colnames(dloc.distr) <- c("cell_id", "freq")
 dloc.distr$freq <- as.numeric(dloc.distr$freq)
 
+## Load code for markup
+source("./code/util/fivethirtyeight_theme.R")
+
 ## Visualize the result: plot the top 10 locations
 dloc.distr.top <- head(dloc.distr, 10)
 (ggplot(dloc.distr.top, aes(cell_id, freq, fill=freq)) + guides(fill=FALSE) +
@@ -114,9 +155,3 @@ dloc.distr.top <- head(dloc.distr, 10)
 ## Close the connection
 mongo.disconnect(mongo)
 mongo.destroy(mongo)
-
-##praveen
-
-
-
-# Lars
