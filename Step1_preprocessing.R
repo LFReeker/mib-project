@@ -8,8 +8,8 @@
 ###   Step 1.1  Connect to the server 
 ###   Step 1.2  Retrieve a sample of the raw data
 ###   Step 1.3  Retrieve all unique users and their connections
-###   Step 1.4
-###   Step 1.5  Retrieve the celltower locations
+###   Step 1.4  Order and transform the retrieved dataset and calculate frequency total and frequency of pairs
+###   Step 1.8  Close the server connection
 
 
 ### Step 1.1
@@ -133,54 +133,16 @@ done <- mongo.cursor.destroy(cursor)
 call.data
 
 
-
-
-### Step 1.5
+### Step 1.4
 ############
 
-## Get the cell tower locations
-loc <- mongo.distinct(mongo, namespace, "cell_id")
-## Convert into vector
-loc <- unlist(loc)
-## Convert from hex into decimal
-loc.dec <- strtoi(loc, 16L)
+## Group the calls per user in the retrieved dataset
+call.data.grouped <- ddply(call.data, "caller.id", summarize, freq=length(callee.id))
+nrow(call.data.grouped)
 
-## Use the aggregation framework to find the distribution of all cell towers
-pipe_1 <- mongo.bson.from.JSON(
-  '{"$group":
-    {"_id": "$cell_id", "count": {"$sum": 1}}
-  }'
-)
-## Sort by frequency in descending order
-pipe_2 <- mongo.bson.from.JSON(
-  '{"$sort": {"count": -1}}'
-)
-pipeline <- list(pipe_1, pipe_2)
-loc.distr <- mongo.aggregation(mongo, namespace, pipeline)
 
-## Reshape the data to fit into an R data frame
-lloc.distr <- mongo.bson.value(loc.distr, "result")
-mloc.distr <- sapply(lloc.distr, function(x) return(c(toString(x["_id"]),
-                                                      as.numeric(x["count"]))))
-dloc.distr <- as.data.frame(t(mloc.distr))
-colnames(dloc.distr) <- c("cell_id", "freq")
-dloc.distr$freq <- as.numeric(dloc.distr$freq)
 
-## Load code for markup
-source("./code/util/fivethirtyeight_theme.R")
 
-## Visualize the result: plot the top 10 locations
-dloc.distr.top <- head(dloc.distr, 10)
-(ggplot(dloc.distr.top, aes(cell_id, freq, fill=freq)) + guides(fill=FALSE) +
-  geom_bar(stat = "identity", color = "white") + xlab("cell_id") + ylab("freq") +
-   ggtitle("Top 10 Locations by Frequency"))
-
-## Plot the histogram of the cell tower locations
-(ggplot(dloc.distr, aes(freq)) + geom_histogram(binwidth=50, fill="#c0392b", alpha=0.75) +
-  fivethirtyeight_theme() +
-  labs(title="Distribution of Cell Tower Frequencies",
-       x="Count", y="Frequency") + scale_x_continuous(labels=comma) +
-  scale_y_continuous(labels=comma) + geom_hline(yintercept=0, size=0.4, color="black"))
 
 ## Close the connection
 mongo.disconnect(mongo)
