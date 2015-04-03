@@ -66,10 +66,14 @@ query
 ## Define the fields to be returned
 fields <- mongo.bson.buffer.create()
 # '1L' means we want to turn this field on, '0L' to turn it off
-mongo.bson.buffer.append(fields, "cell_id", 1L)
+mongo.bson.buffer.append(fields, "_id", 0L)
+mongo.bson.buffer.append(fields, "imei", 1L)
 mongo.bson.buffer.append(fields, "caller_id", 1L)
 mongo.bson.buffer.append(fields, "callee_id", 1L)
-mongo.bson.buffer.append(fields, "_id", 0L)
+mongo.bson.buffer.append(fields, "date", 1L)
+mongo.bson.buffer.append(fields, "time", 1L)
+mongo.bson.buffer.append(fields, "call_duration", 1L)
+mongo.bson.buffer.append(fields, "cell_id", 1L)
 # Make object from buffer
 fields <- mongo.bson.from.buffer(fields)
 
