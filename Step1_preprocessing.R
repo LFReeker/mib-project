@@ -100,7 +100,37 @@ calls <- mongo.find.all(mongo, namespace, query=query, limit=100L)
 ############
 
 ## Retrieve all unique users in the dataset
+## March 2, 2008 is a Sunday
+## March 5, 2008 is a Wednesday
 
+
+## Create a progress bar
+progress.bar <- create_progress_bar("text")
+progress.bar$init(length(10000))
+call.data <- data.frame(stringsAsFactors=FALSE)
+for(i in 1:length(10000)) {  
+  ## Define the query
+  query <- mongo.bson.from.list(list('date'=20080302))
+  ## Create the query cursor
+  cursor <- mongo.find(mongo, namespace, query=query, fields=fields, limit=10000L)  
+  ## Iterate over the cursor
+  while(mongo.cursor.next(cursor)) {
+    ## Iterate and grab the next record
+    value <- mongo.cursor.value(cursor)
+    call <- mongo.bson.to.list(value)
+    ## Make it a data frame
+    call.df <- as.data.frame(t(unlist(call)), stringsAsFactors=FALSE)
+    ## Bind to the master data frame
+    call.data <- rbind.fill(call.data, call.df)
+  }
+  progress.bar$step()
+}
+
+# Release the resources attached to cursor on both client and server
+done <- mongo.cursor.destroy(cursor)
+
+## Show the data in a dataframe
+call.data
 
 
 
