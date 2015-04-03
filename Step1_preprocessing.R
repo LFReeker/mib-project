@@ -58,11 +58,6 @@ sample
 sample.list <- mongo.bson.to.list(sample)
 sample.list
 
-
-## Define the query
-query <- mongo.bson.from.list(list('date'=20080301))
-query
-
 ## Define the fields to be returned
 fields <- mongo.bson.buffer.create()
 # '1L' means we want to turn this field on, '0L' to turn it off
@@ -76,28 +71,6 @@ mongo.bson.buffer.append(fields, "call_duration", 1L)
 mongo.bson.buffer.append(fields, "cell_id", 1L)
 # Make object from buffer
 fields <- mongo.bson.from.buffer(fields)
-
-## Create the query cursor, limit to 100 rows only
-cursor <- mongo.find(mongo, namespace, query=query, fields=fields, limit=100L)
-# Iterate over the cursor
-call.data <- data.frame(stringsAsFactors=FALSE)
-while(mongo.cursor.next(cursor)) {
-  ## Iterate and grab the next record
-  value <- mongo.cursor.value(cursor)
-  call <- mongo.bson.to.list(value)
-  ## Make it a data frame
-  call.df <- as.data.frame(t(unlist(call)), stringsAsFactors=FALSE)
-  ## Bind to the master data frame
-  call.data <- rbind.fill(call.data, call.df)
-}
-# Release the resources attached to cursor on both client and server
-done <- mongo.cursor.destroy(cursor)
-
-## Show the data in a dataframe
-call.data
-
-## Alternative: show the data in a list
-calls <- mongo.find.all(mongo, namespace, query=query, limit=100L)
 
 
 ### Step 1.3
@@ -136,6 +109,8 @@ done <- mongo.cursor.destroy(cursor)
 ## Show the data in a dataframe
 call.data
 
+## Write dataset to csv file
+write.csv(call.data, "call_data_weekend_23414obs.csv")
 
 ### Step 1.4
 ############
