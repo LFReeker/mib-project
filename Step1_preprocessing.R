@@ -44,12 +44,11 @@ mongo.get.databases(mongo)
 ## Take a look at the collections (tables) of one of the db's
 mongo.get.database.collections(mongo, db="admin")
 
+## Count the number of docs (rows) we have in a collection
+mongo.count(mongo, namespace)
 
 ## Step 1.2
 ###########
-
-## Count the number of docs (rows) we have in a collection
-mongo.count(mongo, namespace)
 
 ## Get a sample the data to see how the data looks like
 sample <- mongo.find.one(mongo, namespace)
@@ -80,26 +79,26 @@ fields <- mongo.bson.from.buffer(fields)
 ## March 2, 2008 is a Sunday
 ## March 5, 2008 is a Wednesday
 
-
 ## Create a progress bar
 progress.bar <- create_progress_bar("text")
-progress.bar$init(length(10000))
+progress.bar$init(100)
 call.data <- data.frame(stringsAsFactors=FALSE)
-for(i in 1:length(10000)) {  
-  ## Define the query
-  query <- mongo.bson.from.list(list('date'=20080302))
-  ## Create the query cursor
-  cursor <- mongo.find(mongo, namespace, query=query, fields=fields, limit=10000L)  
-  ## Iterate over the cursor
-  while(mongo.cursor.next(cursor)) {
-    ## Iterate and grab the next record
-    value <- mongo.cursor.value(cursor)
-    call <- mongo.bson.to.list(value)
-    ## Make it a data frame
-    call.df <- as.data.frame(t(unlist(call)), stringsAsFactors=FALSE)
-    ## Bind to the master data frame
-    call.data <- rbind.fill(call.data, call.df)
-  }
+
+## Define the query
+query <- mongo.bson.from.list(list('date'=20080302))
+
+## Create the query cursor
+cursor <- mongo.find(mongo, namespace, query=query, fields=fields, limit=100L)  
+
+## Iterate over the cursor
+while(mongo.cursor.next(cursor)) {
+  ## Iterate and grab the next record
+  value <- mongo.cursor.value(cursor)
+  call <- mongo.bson.to.list(value)
+  ## Make it a data frame
+  call.df <- as.data.frame(t(unlist(call)), stringsAsFactors=FALSE)
+  ## Bind to the master data frame
+  call.data <- rbind.fill(call.data, call.df)
   progress.bar$step()
 }
 
@@ -110,7 +109,8 @@ done <- mongo.cursor.destroy(cursor)
 call.data
 
 ## Write dataset to csv file
-write.csv(call.data, "call_data_weekend_23414obs.csv")
+write.csv(call.data, "call_data_description.csv")
+
 
 ### Step 1.4
 ############
