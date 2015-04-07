@@ -88,7 +88,7 @@ call.data <- data.frame(stringsAsFactors=FALSE)
 query <- mongo.bson.from.list(list('date'=20080302))
 
 ## Create the query cursor
-cursor <- mongo.find(mongo, namespace, query=query, fields=fields, limit=100L)  
+cursor <- mongo.find(mongo, namespace, query=query, fields=fields)  
 
 ## Iterate over the cursor
 while(mongo.cursor.next(cursor)) {
