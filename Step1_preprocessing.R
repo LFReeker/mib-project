@@ -119,7 +119,12 @@ write.csv(call.data, "call_data_weekend_23414obs.csv")
 call.data.grouped <- ddply(call.data, "caller.id", summarize, freq=length(callee.id))
 nrow(call.data.grouped)
 
+### Step 1.5
+############
 
+# call.data <- read.csv("call_data_weekend_33462obs.csv", header = TRUE)
+sunday_grouped <- ddply(call.data, c("caller_id", "callee_id"), summarize, weight=(length(callee_id)*sum(call_duration)))
+write.csv(sunday_grouped, "sunday_freq.csv")
 
 
 
