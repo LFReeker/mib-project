@@ -10,13 +10,13 @@ user_vector <- function(user_id) {  # function for creating a user's location ve
   locations <- data.frame(cell_id = unique(call.data$cell_id))
   
   # create an empty location vector, all values to 0
-  user_vector <- rep(list(c(rep(0, 24))), nrow(different_locations))
+  user_vector <- rep(list(c(rep(0, 24))), nrow(locations))
   
   # create a subset of the data for the user, containing all its calls made
   user_subset <- subset(call.data, caller_id == user_id)
   
   # retrieve all hour and cell_id's of all unique calls made
-  user_calls <- unique(ddply(user_subset, "caller_id", summarize, hour = hr, location = cell_id))
+  user_calls <- ddply(user_subset, "caller_id", summarize, hour = hr, location = cell_id)
   
   for(call in 1:nrow(user_calls)) {
     ## for each call..
@@ -35,7 +35,7 @@ user_vector <- function(user_id) {  # function for creating a user's location ve
     # print(cell_number)
     
     # ..set the value of the particular location in the particular hour to 1
-    user_vector[[cell_number]][user_hour] <- 1
+    user_vector[[cell_number]][user_hour] <- user_vector[[cell_number]][user_hour]+1
     
   }
   
