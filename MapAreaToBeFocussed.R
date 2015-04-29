@@ -7,6 +7,11 @@
 ## Load the libraries
 library(ggmap)
 
+
+## Load the required data
+calldata <- read.csv("cell.loc.data.csv",header=T)
+
+
 # Get the latitude, longitude and radius of area to be focussed (in Km)
 
 #longitude <- 117.089599
@@ -15,33 +20,24 @@ longitude <- 117.141226
 latitude  <- 36.195291
 radius <- 2
 
-## Compute the latitude and longitude boundary for the given radius
-lat_dist <- (1/110.54)*radius
-long_dist <- (radius/(111.32*cospi(latitude)))
 
-lat_lim_top <- latitude + lat_dist
-lat_lim_bot <- latitude - lat_dist
-long_lim_right <- longitude + long_dist
-long_lim_left <- longitude - long_dist
+source("./getRectangle.R")
 
-calldata <- read.csv("cell.loc.data.csv",header=T)
+#36.195291, 117.141226
 
 cell.loc.map <- get_map(location = c(lon = longitude,
                                      lat = latitude),
                         zoom = 13, scale = 2) # scale specifies the resolution of the map
 
-cell.subset <- subset(calldata, latitude <= lat_lim_top)
-cell.subset <- subset(cell.subset, latitude >= lat_lim_bot)
-cell.subset <- subset(cell.subset, longitude <= long_lim_right)
-cell.subset <- subset(cell.subset, longitude >= long_lim_left)
+rect <- getRectangle(latitude,longitude,radius)
+
+cell.subset <- subset(calldata, latitude <= rect$ymax)#lat_lim_top)
+cell.subset <- subset(cell.subset, latitude >= rect$ymin)#lat_lim_bot)
+cell.subset <- subset(cell.subset, longitude <= rect$xmax)#long_lim_right)
+cell.subset <- subset(cell.subset, longitude >= rect$xmin)#long_lim_left)
 
 
 map2 <- ggmap(cell.loc.map, extent='panel', base_layer=ggplot(calldata, aes(x=longitude, y=latitude)))
-
-# create a data frame with the dimensions of the rectangle. 
-#the xmin and xmax are the longitude boundaries of the box, while ymin and ymax are the latitude boundaries.
-rect <- data.frame(xmin=long_lim_left, xmax=long_lim_right, ymin=lat_lim_bot, ymax=lat_lim_top)
-
 
 # now add the rectangle data frame into ggplot using geom_rect() and specify the color and size 
 map.scan <- map2 + geom_rect(data=rect, aes(xmin=xmin, xmax=xmax, ymin=ymin, ymax=ymax), color="gray20", alpha=0.4, inherit.aes = FALSE) 
@@ -61,4 +57,3 @@ print(map.scan)
 #                   E N D   O F   P R O G R A M                                        #
 #                                                                                      #
 ########################################################################################
-
