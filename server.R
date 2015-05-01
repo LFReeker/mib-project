@@ -26,8 +26,6 @@ server <- function(input, output) {
   #############
   
   
-  
-  
   #############
   ### Tab 1 ###
   #############
@@ -89,7 +87,7 @@ server <- function(input, output) {
       coordinates <- geocode(text_location)
       
       locationMap <- get_map(location=text_location,
-                             source="google", maptype= "roadmap", crop=FALSE, zoom = 17, scale = 2)
+                             source="google", maptype= "roadmap", crop=FALSE, zoom = 14, scale = 2)
       
       ggmap(locationMap) +
         geom_point(aes(x = lon, y = lat, fill = "blue"), data = coordinates,
@@ -285,7 +283,13 @@ server <- function(input, output) {
       
       march_sub_c <- march_sub_c[1:num_of_user,]
       
-      return(march_sub_c)
+      march_new <- march_sub_c
+      
+      march_new$caller_id <- as.character(march_new$caller_id)
+      
+      rownames(march_new) <- 1:nrow(march_new)
+      
+      return(march_new)
     }
     
   })
@@ -436,10 +440,14 @@ server <- function(input, output) {
     if(day == 20080307){
       march_od <- march7
     }
-      
+    
+    #cat("Test: ", day)
+    
     square_side <- radius*1.414
     
     march <- march_od
+    
+    radius <- 20
     
     lat_dist <- (1/110.54)*radius
     long_dist <- (radius/(111.32*cos(latitude)))
@@ -451,10 +459,14 @@ server <- function(input, output) {
     
     march_ll <- ddply(march_od, c("latitude","longitude"), summarize, len=length(callee_id))
     
+    
+    
     march_ll_sub <- subset(march_ll, latitude <= lat_lim_top)
     march_ll_sub <- subset(march_ll_sub, latitude >= lat_lim_bot)
     march_ll_sub <- subset(march_ll_sub, longitude <= long_lim_right)
     march_ll_sub <- subset(march_ll_sub, longitude >= long_lim_left)
+    
+  
     
     march_sub <- subset(march, march$latitude %in% march_ll_sub$latitude)
     march_sub <- subset(march_sub, march$longitude %in% march_ll_sub$longitude)
@@ -489,7 +501,8 @@ server <- function(input, output) {
     week <- input$input_top_week
     meal_type <- input$input_top_meal
     
-    
+    meal_type <- "Breakfast"
+    week <- "Weekend"
     if(meal_type == "Breakfast"){
       time <- c(8,9,10,11)
     }
@@ -528,20 +541,25 @@ server <- function(input, output) {
     march_ll_sub <- subset(march_ll_sub, longitude <= long_lim_right)
     march_ll_sub <- subset(march_ll_sub, longitude >= long_lim_left)
     
-    march_sub <- subset(march, march$latitude %in% march_ll_sub$latitude)
-    march_sub <- subset(march_sub, march$longitude %in% march_ll_sub$longitude)
-    
-    
-    march_w_sub <- subset(march_sub, as.numeric(march_sub$hr) %in% time)
+    march_sub <- subset(march_w, march_w$latitude %in% march_ll_sub$latitude)
+    march_sub <- subset(march_sub, march_sub$longitude %in% march_ll_sub$longitude)
+   
+    march_w_sub <- subset(march_sub, march_sub$hr %in% as.integer(time))
     
     march_w_sub_g <- ddply(march_w_sub, "caller_id", summarize, len = length(callee_id))
     
-    march_w_sub_g <- march_w_sub_g[order(-march_w_sub_g$caller_id),]
+    march_w_sub_g <- march_w_sub_g[order(-march_w_sub_g$len),]
     
     march_w_sub_g_ret <- march_w_sub_g[1:num_of_users,]
     
-    return(march_w_sub_g_ret)
+    colnames(march_w_sub_g_ret) <- c("Caller_id", "Number of calls")
+    
+    #march_new <- march_w_sub_g_ret
+    #march_new$caller_id <- as.character(march_new$caller_id)
+    #rownames(march_new) <- 1:nrow(march_new)
+    #return(march_new)
   
+    return(march_w_sub_g_ret)
   })
   
   ##############
