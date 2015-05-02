@@ -11,21 +11,21 @@ library(lsa)
 
 
 # Define the header of the dashboard
-header <- dashboardHeader(title = "Kelaitou Restaurant")
+header <- dashboardHeader(title = "Tai'an Dashboard")
 
 # Define the sidebar of the dashboard
 sidebar <- dashboardSidebar(
   sidebarMenu(
     menuItem("Introduction", tabName = "tab0", icon = icon("info-circle")),
-    menuItem("1. Dataset", tabName = "tab1", icon = icon("database")),
-    menuItem("2. Location", tabName = "tab2", icon = icon("map-marker")),
-    menuItem("3. Neighborhood", tabName = "tab3", icon = icon("group")),
+    menuItem("1. Call dataset", tabName = "tab1", icon = icon("database")),
+    menuItem("2. Celltower dataset", tabName = "tab2", icon = icon("database")),
+    menuItem("3. Location", tabName = "tab3", icon = icon("map-marker")),
     menuItem("4. Call density", tabName = "tab4", icon = icon("phone")),
-    menuItem("5. General trend", tabName = "tab5", icon = icon("line-chart")),
+    menuItem("5. Neighborhood", tabName = "tab5", icon = icon("group")),
     menuItem("6. Clients (week)", tabName = "tab6", icon = icon("th")),
     menuItem("7. Clients (day)", tabName = "tab7", icon = icon("th")),
     menuItem("8. Social network", tabName = "tab8", icon = icon("group")),
-    menuItem("9. Important people", tabName = "tab9", icon = icon("th")),
+    menuItem("9. Influencial people", tabName = "tab9", icon = icon("th")),
     menuItem("10. Top clients", tabName = "tab10", icon = icon("money")),
     menuItem("11. Targeting clients", tabName = "tab11", icon = icon("th")),
     menuItem("Conclusion", tabName = "tab12", icon = icon("th"))
@@ -43,13 +43,15 @@ body <- dashboardBody(
             tags$br(),
             tags$br(),
             tags$br(),
-            tags$br(),
-            tags$br(),
-            tags$br(),
             fluidRow(
               column(12, align="center",
-                     tags$img(src = "heinz.png"),
-                     h2("Welcome to the Kelaitou Restaurant dashboard!")
+                     tags$img(src = "heinz2.png"),
+                     h2("Welcome to the Kelaitou Restaurant dashboard!"),
+                     tags$br(),
+                     tags$br(),
+                     tags$br(),
+                     h6("Click ", tags$a(href="http://larsreeker.nl/mib/taian_march_calldata.csv", "here "), "to download the mobile phone call dataset"),
+                     h6("Click ", tags$a(href="http://larsreeker.nl/mib/taian_celltower_locations.csv", "here "), "to download the celltower locations dataset")
                      )
             )
             
@@ -61,37 +63,72 @@ body <- dashboardBody(
             h5("On this page the mobile phone dataset can be uploaded and processed accordingly to its format."),
             fluidRow(
               box(
-                title = "Data input", 
+                title = "Call data input", 
                 status = "primary",
                 width = 4,
                 fileInput('file1', 'Choose CSV File',
                           accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
                 tags$hr(),
-                checkboxInput('header', 'Header', TRUE),
-                radioButtons('sep', 'Separator',
+                checkboxInput('header1', 'Header', TRUE),
+                radioButtons('sep1', 'Separator',
                              c(Comma=',',
                                Semicolon=';',
                                Tab='\t'),
                              ';'),
-                radioButtons('quote', 'Quote',
+                radioButtons('quote1', 'Quote',
                              c(None='',
                                'Double Quote'='"',
                                'Single Quote'="'"),
-                             ''),
-                submitButton(text = "Update dataset", 
-                             icon = icon("cog", lib="glyphicon"))
+                             '')
               ),
               box(
                 title = "Data", 
                 status = "primary",
                 width = 8,
-                tableOutput('contents')
+                tags$div(style="width:auto; height:auto; overflow:auto;padding:5px;",
+                  dataTableOutput('contents1')
+                )
               )
             )
     ),
     
     # Tab 2
     tabItem(tabName = "tab2",
+            h3("Provide a dataset to start the analysis"),
+            h5("On this page the mobile phone dataset can be uploaded and processed accordingly to its format."),
+            fluidRow(
+              box(
+                title = "Cell data input", 
+                status = "primary",
+                width = 3,
+                fileInput('file2', 'Choose CSV File',
+                          accept=c('text/csv', 'text/comma-separated-values,text/plain', '.csv')),
+                tags$hr(),
+                checkboxInput('header2', 'Header', TRUE),
+                radioButtons('sep2', 'Separator',
+                             c(Comma=',',
+                               Semicolon=';',
+                               Tab='\t'),
+                             ';'),
+                radioButtons('quote2', 'Quote',
+                             c(None='',
+                               'Double Quote'='"',
+                               'Single Quote'="'"),
+                             '')
+              ),
+              box(
+                title = "Data", 
+                status = "primary",
+                width = 9,
+                tags$div(style="width:auto; height:auto; overflow:auto;padding:5px;",
+                         dataTableOutput('contents2')
+              )
+            )
+          )
+    ),
+    
+    # Tab 3
+    tabItem(tabName = "tab3",
             h3("Provide shop location"),
             h5("On this page the location of the subject (restaurant, shop, etc.) should be provided. This location will be used throughout the dashboard."),
             fluidRow(
@@ -102,12 +139,11 @@ body <- dashboardBody(
                 collapsible = TRUE,
                 textInput("input_text_location", 
                           label = "Enter your address/location here:",
-                          value = ""),
+                          value = "Kelaitou Restaurant, Tai'an, China"),
                 
                 helpText("This location search uses Google Maps."),
                 helpText("Kelaitou Restaurant Wenhua Rd Taishan, Tai'an, Shandong China"),
-                submitButton(text = "Retrieve coordinates", 
-                             icon = icon("pushpin", lib="glyphicon"))
+                actionButton("location_go","Retrieve location", icon = icon("map-marker", lib="font-awesome"))
               )
             ),
             fluidRow(
@@ -117,15 +153,14 @@ body <- dashboardBody(
                 width = 12,
                 height = 700,
                 collapsible = TRUE,
-                textOutput("output_text_location_1"),
-                textOutput("output_text_location_2"),
+                htmlOutput("output_text_location"),
                 plotOutput("output_map_location")
               )
             )
     ),
     
-    # Tab 3
-    tabItem(tabName = "tab3",
+    # Tab 5
+    tabItem(tabName = "tab5",
             h3("Compute the neighborhood of the location"),
             h5("On this page the system let's you select the desired area of the analysis."),
             fluidRow(
@@ -134,11 +169,11 @@ body <- dashboardBody(
                 status = "primary",
                 width = 4,
                 collapsible = TRUE,
-                sliderInput("input_area_map", label = "Select radius",
-                            min = 1, max = 5, value = 4),
+                sliderInput("input_area_map", label = "Select radius:",
+                            min = 1, max = 10, value = 4),
                 helpText("We recommend a radius of 2 or 3, which provides a good precision."),
-                submitButton(text = "Compute area", 
-                             icon = icon("cog", lib="glyphicon"))
+                sliderInput("zoom_area_map", label = "Select zoom level:",
+                            min = 10, max = 20, value = 12)
               ),
               box(
                 title = "Map", 
@@ -171,9 +206,7 @@ body <- dashboardBody(
                                            "Friday March 7th 2008" = 20080307)
                             , selected = 20080301),
                 sliderInput("call_density_hour", "Select hour:", 0, 23, 0, step = 1, 
-                            animate=animationOptions(interval=3000, loop=T)),
-                submitButton(text = "Compute density", 
-                            icon = icon("cog", lib="glyphicon"))
+                            animate=animationOptions(interval=3000, loop=T))
               ),
               box(
                 title = "Plot", 
@@ -181,35 +214,6 @@ body <- dashboardBody(
                 width = 8,
                 collapsible = TRUE,
                 plotOutput("output_call_density")
-              )
-            )
-    ),
-    
-    
-    
-    # Tab 5
-    tabItem(tabName = "tab5",
-            h3("General call trend throughout the week"),
-            h5("This graph represents the total number of calls per day of the whole city area."),
-            fluidRow(
-              #box(
-              #  title = "Radius", 
-              #  status = "primary",
-              #  width = 4,
-              #  collapsible = TRUE,
-              #  sliderInput("input_general_trend", label = "Select radius",
-              #              min = 1, max = 5, value = 2),
-              #  helpText("We recommend a radius of 2 or 3, which provides a good precision."),
-              #  submitButton(text = "Compute area", 
-              #               icon = icon("cog", 
-              #                           lib="glyphicon"))
-              #),
-              box(
-                title = "Plot", 
-                status = "primary",
-                width = 12,
-                collapsible = TRUE,
-                plotOutput("output_general_trend")
               )
             )
     ),
@@ -227,10 +231,7 @@ body <- dashboardBody(
                 sliderInput("input_clients_radius", label = "Select radius:",
                             min = 1, max = 5, value = 2),
                 helpText("We recommend a radius of 2 or 3, which provides a good precision."),
-                textInput("input_clients_num", label = "Number of potential clients:", value = 1000),
-                submitButton(text = "Compute list", 
-                             icon = icon("cog", 
-                                         lib="glyphicon")),
+                textInput("input_clients_num", label = "Number of potential clients:", value = 30),
                 helpText("For precision, this takes a while...")
               ),
               box(
@@ -267,9 +268,6 @@ body <- dashboardBody(
                                            "Thursday March 6th 2008" = 20080306,
                                            "Friday March 7th 2008" = 20080307)
                             , selected = 20080301),
-                submitButton(text = "Compute list", 
-                             icon = icon("cog", 
-                                         lib="glyphicon")),
                 helpText("For precision, this can take a while...")
               ),
               box(
@@ -305,9 +303,6 @@ body <- dashboardBody(
                                            "Thursday March 6th 2008" = 20080306,
                                            "Friday March 7th 2008" = 20080307)
                             , selected = 20080301),
-                submitButton(text = "Compute plot", 
-                             icon = icon("cog", 
-                                         lib="glyphicon")),
                 helpText("For precision, this takes a while...")
               ),
               box(
@@ -344,10 +339,7 @@ body <- dashboardBody(
                                            "Wednesday March 5th 2008" = 20080305,
                                            "Thursday March 6th 2008" = 20080306,
                                            "Friday March 7th 2008" = 20080307)
-                            , selected = 20080301),
-                submitButton(text = "Compute list", 
-                             icon = icon("cog", 
-                                         lib="glyphicon"))
+                            , selected = 20080301)
               ),
               box(
                 title = "List", 
@@ -370,9 +362,9 @@ body <- dashboardBody(
                 width = 4,
                 collapsible = TRUE,
                 sliderInput("input_top_radius", label = "Select radius:",
-                            min = 1, max = 5, value = 2),
+                            min = 1, max = 15, value = 5),
                 helpText("We recommend a radius of 2 or 3, which provides a good precision."),
-                textInput("input_top_num", label = "Number users:", value = 100),
+                textInput("input_top_num", label = "Number users:", value = 15),
                 selectInput("input_top_week", label = "Select weekday or weekend:", 
                             choices = list("Please select weekday or weekend" = "",
                                            "Weekday" = "Weekday",
@@ -384,10 +376,7 @@ body <- dashboardBody(
                                            "Lunch" = "Lunch",
                                            "Snacks" = "Snacks",
                                            "Dinner" = "Dinner")
-                            , selected = "Lunch"),
-                submitButton(text = "Compute list", 
-                             icon = icon("cog", 
-                                         lib="glyphicon"))
+                            , selected = "Lunch")
               ),
               box(
                 title = "List", 
@@ -412,12 +401,9 @@ body <- dashboardBody(
                 sliderInput("input_recomm_radius", label = "Select radius:",
                             min = 1, max = 15, value = 10),
                 helpText("We recommend a radius of 2 or 3, which provides a good precision."),
-                textInput("input_recomm_num", label = "Number users:", value = 6),
-                textInput("input_recomm_number", label = "User ID:", value = ""),
-                helpText("User: 396416538"),
-                submitButton(text = "Compute list", 
-                             icon = icon("cog", 
-                                         lib="glyphicon"))
+                textInput("input_recomm_num", label = "Number users:", value = 5),
+                textInput("input_recomm_number", label = "User ID:", value = "77969815431"),
+                helpText("User: 77969815431")
               ),
               box(
                 title = "List", 
