@@ -9,31 +9,6 @@ library(shiny)
 library(shinydashboard)
 library(lsa)
 
-#setwd("C:/Users/Lars/Desktop/Dashboard")
-
-## Load cell tower data
-#celldata <- read.csv("cell.loc.data.csv", header=T)
-#celldata$longitude <- as.numeric(as.character(celldata$longitude))
-#celldata$latitude <- as.numeric(as.character(celldata$latitude))
-
-
-
-#march1 <- read.csv("march1_done.csv", header=T)
-#march2 <- read.csv("march2_done.csv", header=T)
-#march3 <- read.csv("march3_done.csv", header=T)
-#march4 <- read.csv("march4_done.csv", header=T)
-#march5 <- read.csv("march5_done.csv", header=T)
-#march6 <- read.csv("march6_done.csv", header=T)
-#march7 <- read.csv("march7_done.csv", header=T)
-
-# Load week call data
-#load("march_data.RData")
-
-
-
-
-
-
 
 user_vector <- function(user_id) {  # function for creating a user's location vector
   
