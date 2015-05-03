@@ -1,3 +1,11 @@
+library(igraph)
+library(plyr)
+library(ggplot2)
+library(TraMineR)
+library(cluster)
+library(ggmap)
+library(reshape2)
+
 recommendations <- function(latitude, longitude, radius, num_of_user, number){
   lat_dist <- (1/110.54)*radius
   long_dist <- (radius/(111.32*cospi(latitude)))
