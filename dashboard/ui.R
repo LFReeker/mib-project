@@ -16,19 +16,32 @@ header <- dashboardHeader(title = "Tai'an Dashboard")
 # Define the sidebar of the dashboard
 sidebar <- dashboardSidebar(
   sidebarMenu(
-    menuItem("Introduction", tabName = "tab0", icon = icon("info-circle")),
-    menuItem("1. Call dataset", tabName = "tab1", icon = icon("database")),
-    menuItem("2. Celltower dataset", tabName = "tab2", icon = icon("database")),
-    menuItem("3. Location", tabName = "tab3", icon = icon("map-marker")),
-    menuItem("4. Call density", tabName = "tab4", icon = icon("phone")),
-    menuItem("5. Neighborhood", tabName = "tab5", icon = icon("group")),
-    menuItem("6. Clients (week)", tabName = "tab6", icon = icon("th")),
-    menuItem("7. Clients (day)", tabName = "tab7", icon = icon("th")),
-    menuItem("8. Social network", tabName = "tab8", icon = icon("group")),
-    menuItem("9. Influencial people", tabName = "tab9", icon = icon("th")),
-    menuItem("10. Top clients", tabName = "tab10", icon = icon("money")),
-    menuItem("11. Targeting clients", tabName = "tab11", icon = icon("th")),
-    menuItem("Conclusion", tabName = "tab12", icon = icon("th"))
+    menuItem("Welcome", tabName = "tab0"),
+    
+    menuItem("Introduction", tabName = "tab0",
+      menuSubItem("Introduction", tabName = "tab0", icon = icon("info-circle")),
+      menuSubItem("Instructions", tabName = "tab0", icon = icon("info-circle"))),
+    
+    menuItem("Provide information", tabName = "tab0",
+      menuSubItem("1. Phone calls dataset", tabName = "tab1", icon = icon("database")),
+      menuSubItem("2. Cell Tower dataset", tabName = "tab2", icon = icon("database")),
+      menuSubItem("3. Location", tabName = "tab3", icon = icon("map-marker"))),
+    
+    menuItem("Analysis", tabName = "tab0",
+      menuSubItem("4. Call density", tabName = "tab4", icon = icon("phone")),
+      menuSubItem("5. Neighborhood", tabName = "tab5", icon = icon("group")),
+      menuSubItem("6. Clients (week)", tabName = "tab6", icon = icon("th")),
+      menuSubItem("7. Clients (day)", tabName = "tab7", icon = icon("th")),
+      menuSubItem("8. Social network", tabName = "tab8", icon = icon("group")),
+      menuSubItem("9. Influencial people", tabName = "tab9", icon = icon("th")),
+      menuSubItem("10. Top clients", tabName = "tab10", icon = icon("money")),
+      menuSubItem("11. Targeting clients", tabName = "tab11", icon = icon("th"))),
+    
+    menuItem("General insights", tabName = "tab12",
+     menuSubItem("General insights", tabName = "tab12", icon = icon("th"))),
+    
+    menuItem("Conclusion", tabName = "tab12",
+      menuSubItem("Conclusion", tabName = "tab12", icon = icon("info-circle")))
   )
 )
 
@@ -38,8 +51,6 @@ body <- dashboardBody(
     
     # Tab 0
     tabItem(tabName = "tab0",
-            tags$br(),
-            tags$br(),
             tags$br(),
             tags$br(),
             tags$br(),
