@@ -21,7 +21,7 @@ latitude  <- 36.195291
 radius <- 2
 
 
-source("./getRectangle.R")
+source("./01_createRectangle.R")
 
 #36.195291, 117.141226
 
