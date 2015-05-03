@@ -1,3 +1,11 @@
+library(igraph)
+library(plyr)
+library(ggplot2)
+library(TraMineR)
+library(cluster)
+library(ggmap)
+library(reshape2)
+
 one_day_top_n <- function(latitude, longitude, radius, num_of_user, day){
 
   if(day = 20080301){
