@@ -9,8 +9,9 @@ In this project, we conduct a social network analysis and spatial trajectory ana
 
 The git repository consists of a folder *code* which contains the code for preprocessing of the data, the analysis and other code for support of the analysis. The folder *dashboard* contains the code to build the interactive dashboard. At last, the folder *plot* consists of the several plots and images created from the analysis for the report.
 
-For this project we drafted a report, final presentation and a dashboard.
+For this project we drafted a report, final presentation, datasets and a dashboard.
 - [Final Report](www.github.com)
+- [Call dataset](http://larsreeker.nl/mib/taian_march_calldata.csv) and [Cell Tower dataset](http://larsreeker.nl/mib/taian_celltower_locations.csv)
 - [Dashboard](https://larsreeker.shinyapps.io/MIB_Dashboard)
 
 ###### We hope you enjoy our project!
