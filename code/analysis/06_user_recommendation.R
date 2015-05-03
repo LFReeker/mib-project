@@ -56,7 +56,7 @@ recommendations <- function(latitude, longitude, radius, num_of_user, number){
   
   #cat("Test:", nodes$caller_id)
   
-  for(i in 1:length(nodes$caller_id)) {   
+  for(i in 1:20) {   # better: nrow(nodes$caller_id) but limited due to the use of a subset of the whole dataset
     user <- nodes$caller_id[i]
     vector_user <- user_vector(user) # see user_vector function in 'support'
     
