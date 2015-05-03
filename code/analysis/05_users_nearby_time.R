@@ -1,3 +1,11 @@
+library(igraph)
+library(plyr)
+library(ggplot2)
+library(TraMineR)
+library(cluster)
+library(ggmap)
+library(reshape2)
+
 time_frame <- function(latitude, longitude, radius, num_of_user, week, meal_type){
   if(meal_type == "Breakfast"){
     time <- c(8,9,10,11)
