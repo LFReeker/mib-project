@@ -1,3 +1,11 @@
+library(igraph)
+library(plyr)
+library(ggplot2)
+library(TraMineR)
+library(cluster)
+library(ggmap)
+library(reshape2)
+
 get_social_network <- function(latitude, longitude, radius, num_of_user){
   
   square_side <- radius*1.414
