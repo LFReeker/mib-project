@@ -1,3 +1,11 @@
+library(igraph)
+library(plyr)
+library(ggplot2)
+library(TraMineR)
+library(cluster)
+library(ggmap)
+library(reshape2)
+
 general_trends <- function(latitude, longitude, radius){
 
   lat_dist <- (1/110.54)*radius
