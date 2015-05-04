@@ -20,7 +20,7 @@ time_frame <- function(latitude, longitude, radius, num_of_user, week, meal_type
     time <- c(19,20,21,22)
   }
   
-  if(week == "Weekday"){
+  if(week == "Weekend"){
     march_w <- rbind(march1,march2)
   }
   if(week == "Weekday"){
