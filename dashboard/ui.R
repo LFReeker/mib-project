@@ -514,7 +514,13 @@ body <- dashboardBody(
               column(8, 
                      tags$div(class = "header", checked = NA,
                               h3("Take aways"),
-                              h5("blablabla"),
+                              h5("The four aforementioned analyses use different scope and level of information provided in the data. Not only are the effectiveness of all four analyses different, but also their main purposes. Nonetheless, all analyses represent an analytical way of how to identify the 'right' target group."),
+                              tags$p(),
+                              h5("In a nutshell, analysis I is based solely on the location dimension. Analysis II extends the location-based information by employing certain timeframe to narrow down the dataset. As a consequence, it allows a much deeper analysis. 
+                                 Analysis III touches on the social dimension and gives an entirely new insight of the data. Finally, analysis IV combines all social, spatial and time dimensions and thereby allows even more informative inferences."),
+                              tags$p(),  
+                              h5("In general, we recommend Kelaitou to use analyses I, III and IV to identify the targets for increasing the general awareness of its restaurant and brand. 
+                                 Due to the very customized feature in analysis II, we believe that analysis II is a more useful alternative to promote certain meal sets."),
                               tags$p(
                                 h5("In the case you have questions about the dashboard or project, please reach 
                                    out to one of us!"),
