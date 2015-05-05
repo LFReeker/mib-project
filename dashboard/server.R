@@ -16,6 +16,49 @@ options(shiny.maxRequestSize = 500*1024^2) # 500 MB limit upload
 # Create server side of dashboard
 server <- function(input, output) {
   
+  user_vector <- function(user_id) {  # function for creating a user's location vector
+    
+    call.data <- callData()
+    
+    # retrieve all the unique locations in the dataset
+    locations <- data.frame(cell_id = unique(call.data$cell_id))
+    #locations <- data.frame(cell_id = unique(celldata$cell))
+    
+    # create an empty location vector, all values to 0
+    user_vector <- rep(list(c(rep(0, 24))), nrow(locations))
+    
+    # create a subset of the data for the user, containing all its calls made
+    user_subset <- subset(call.data, caller_id == user_id)
+    
+    # retrieve all hour and cell_id's of all unique calls made
+    user_calls <- ddply(user_subset, "caller_id", summarize, hour = hr, location = cell_id)
+    
+    for(call in 1:nrow(user_calls)) {
+      ## for each call..
+      # print(call)
+      
+      # ..store the cell_id of the call
+      user_cell <- user_calls$location[call]
+      # print(user_cell)
+      
+      # ..store the hour the call was made
+      user_hour <- user_calls$hour[call]
+      # print(user_hour)
+      
+      # ..retrieve the cell_id's index in the list of all unique locations
+      cell_number <- which(locations$cell_id == user_calls$location[call])
+      # cat(cell_number)
+      
+      # ..set the value of the particular location in the particular hour to 1
+      user_vector[[cell_number]][user_hour] <- user_vector[[cell_number]][user_hour]+1
+      
+    }
+    
+    # return the filled location vector
+    return(unlist(user_vector))
+    
+  }
+  
   
   ## Data Import
   callData <- reactive({
@@ -73,7 +116,8 @@ server <- function(input, output) {
   })
   
   output$output_text_location <- renderUI({ 
-    getLocation()
+    input$location_go
+    isolate(getLocation())
   })
   
   getMap <- reactive({
@@ -177,11 +221,11 @@ server <- function(input, output) {
     text_location <- input$input_text_location
     coordinates <- geocode(text_location)
     
-    call_density_day <- input$call_density_day
+    call_density_day <- as.numeric(as.integer(input$call_density_day))
     hour <- input$call_density_hour
     
     ## Load the merged data
-    singleDay_with_coord <- subset(march, date == call_density_day)
+    singleDay_with_coord <- subset(callData(), callData()$date == call_density_day)
     
     ## Group the data by longitude, latitude and hour
     lon.lat.hr <- ddply(singleDay_with_coord, c("longitude","latitude", "hr"), summarise, count=length(c(longitude,latitude,hr)))#, duration=sum(call_duration))
@@ -189,6 +233,8 @@ server <- function(input, output) {
     lon.lat.hr$count <- as.numeric(lon.lat.hr$count)
     
     lon.lat <- lon.lat.hr[which(lon.lat.hr$hr == hour),]
+    
+    lon.lat <- as.data.frame(lon.lat)
     
     cell.loc.map <- ggmap(cell.loc.map()) + geom_point(data=lon.lat, aes(x = longitude, y = latitude, size=count, alpha=0.5, fill="red"), shape=21) + scale_size(range=c(3,30)) + guides(fill = FALSE, alpha = FALSE, size = FALSE) 
     ###+ geom_density2d(data = celldata, aes(x = longitude, y = latitude))
@@ -263,7 +309,82 @@ server <- function(input, output) {
   
   
   ## Clients per day
+  clientsDay <- reactive({
+    
+    text_location <- input$input_text_location
+    radius <- input$input_clients_radius2
+    num_of_user <- as.numeric(input$input_clients_num2)
+    coordinates <- geocode(text_location)
+    longitude <- coordinates$lon
+    latitude <- coordinates$lat
+    day <- input$input_clients_day
+    
+    if(text_location == "") {
+      return("Provide a location!")
+    } else if(num_of_user == 0) {
+      return("Provide a valid number of users!")
+    } else {
+      
+      if(day == 20080301){
+        march_od <- subset(callData(), date == 20080301)
+      }
+      if(day == 20080302){
+        march_od <- subset(callData(), date == 20080302)
+      }
+      if(day == 20080303){
+        march_od <- subset(callData(), date == 20080303)
+      }
+      if(day == 20080304){
+        march_od <- subset(callData(), date == 20080304)
+      }
+      if(day == 20080305){
+        march_od <- subset(callData(), date == 20080305)
+      }
+      if(day == 20080306){
+        march_od <- subset(callData(), date == 20080306)
+      }
+      if(day == 20080307){
+        march_od <- subset(callData(), date == 20080307)
+      }
+      
+      lat_dist <- (1/110.54)*radius
+      long_dist <- (radius/(111.32*cospi(latitude)))
+      
+      lat_lim_top <- latitude + lat_dist
+      lat_lim_bot <- latitude - lat_dist
+      long_lim_right <- longitude + long_dist
+      long_lim_left <- longitude - long_dist
+      
+      march_ll <- ddply(march_od, c("latitude","longitude"), summarize, len=length(callee_id))
+      
+      march_ll_sub <- subset(march_ll, latitude <= lat_lim_top)
+      march_ll_sub <- subset(march_ll_sub, latitude >= lat_lim_bot)
+      march_ll_sub <- subset(march_ll_sub, longitude <= long_lim_right)
+      march_ll_sub <- subset(march_ll_sub, longitude >= long_lim_left)
+      
+      march_sub <- subset(march_od, march_od$latitude %in% march_ll_sub$latitude)
+      march_sub <- subset(march_sub, march_sub$longitude %in% march_ll_sub$longitude)
+      
+      march_sub_c <- ddply(march_sub,"caller_id", summarize, len = length(callee_id))
+      
+      march_sub_c <- march_sub_c[order(-march_sub_c$len),]
+      
+      march_sub_c <- march_sub_c[1:num_of_user,]
+      
+      march_new <- march_sub_c
+      
+      march_new$caller_id <- as.character(march_new$caller_id)
+      
+      rownames(march_new) <- 1:nrow(march_new)
+      colnames(march_new) <- c("Caller ID", "Number of calls")
+      
+      march_new
+    }
+  })
   
+  output$output_clients_day <- renderTable({
+    clientsDay()
+  })
   
   ## Social Network
   socialNetwork <- reactive({
@@ -315,8 +436,8 @@ server <- function(input, output) {
     march_ll_sub <- subset(march_ll_sub, longitude <= long_lim_right)
     march_ll_sub <- subset(march_ll_sub, longitude >= long_lim_left)
     
-    march_sub <- subset(march, march$latitude %in% march_ll_sub$latitude)
-    march_sub <- subset(march, march$longitude %in% march_ll_sub$longitude)
+    march_sub <- subset(callData(), callData()$latitude %in% march_ll_sub$latitude)
+    march_sub <- subset(march_sub, march_sub$longitude %in% march_ll_sub$longitude)
     
     march_sub_cc <- ddply(march_sub, c("caller_id","callee_id"), summarize, len = length(callee_id))
     
@@ -384,11 +505,9 @@ server <- function(input, output) {
       march_od <- subset(callData(), date == 20080307)
     }
     
-    square_side <- radius*1.414
+    #square_side <- radius*1.414
     
-    march <- march_od
-    
-    radius <- 20
+    #radius <- 20
     
     lat_dist <- (1/110.54)*radius
     long_dist <- (radius/(111.32*cos(latitude)))
@@ -406,8 +525,8 @@ server <- function(input, output) {
     march_ll_sub <- subset(march_ll_sub, longitude >= long_lim_left)
     
     
-    march_sub <- subset(march, march$latitude %in% march_ll_sub$latitude)
-    march_sub <- subset(march_sub, march$longitude %in% march_ll_sub$longitude)
+    march_sub <- subset(march_od, march_od$latitude %in% march_ll_sub$latitude)
+    march_sub <- subset(march_sub, march_sub$longitude %in% march_ll_sub$longitude)
     
     march_sub_cc <- ddply(march_sub,c("caller_id","callee_id"), summarize, len = length(callee_id))
     
@@ -451,8 +570,8 @@ server <- function(input, output) {
     week <- input$input_top_week
     meal_type <- input$input_top_meal
     
-    meal_type <- "Breakfast"
-    week <- "Weekend"
+    #week <- "Weekday"
+    #meal_type <- "Snacks"
     
     march1 <- subset(callData(), date == 20080301)
     march2 <- subset(callData(), date == 20080302)
@@ -464,26 +583,26 @@ server <- function(input, output) {
 
     if(meal_type == "Breakfast"){
       time <- c(8,9,10,11)
-    }
-    if(meal_type == "Lunch"){
+    } else if(meal_type == "Lunch"){
       time <- c(12,13,14,15)
-    }
-    if(meal_type == "Snacks"){
+    } else if(meal_type == "Snacks"){
       time <- c(16,17,18)
-    }
-    if(meal_type == "Dinner"){
+    } else if(meal_type == "Dinner"){
       time <- c(19,20,21,22)
     }
     
     if(week == "Weekend"){
       march_w <- rbind(march1,march2)
-    }
-    if(week == "Weekday"){
+    } else if(week == "Weekday"){
       march_w <- rbind(march3,march4)
       march_w <- rbind(march_w,march5)
       march_w <- rbind(march_w,march6)
       march_w <- rbind(march_w,march7)
     }
+    
+    #latitude <- 35.87889
+    #longitude <- 117.6725 
+    #radius <- 3
     
     lat_dist <- (1/110.54)*radius
     long_dist <- (radius/(111.32*cospi(latitude)))
@@ -503,7 +622,11 @@ server <- function(input, output) {
     march_sub <- subset(march_w, march_w$latitude %in% march_ll_sub$latitude)
     march_sub <- subset(march_sub, march_sub$longitude %in% march_ll_sub$longitude)
     
-    march_w_sub <- subset(march_sub, march_sub$hr %in% as.integer(time))
+    time <- as.data.frame(time)
+    a <- rep(1, length(time))
+    time1 <- cbind(a, time)
+    
+    march_w_sub <- subset(march_sub, march_sub$hr %in% time1$time)
     
     march_w_sub_g <- ddply(march_w_sub, "caller_id", summarize, len = length(callee_id))
     
@@ -516,6 +639,7 @@ server <- function(input, output) {
     march_w_sub_g_ret$Caller_id <- as.character(march_w_sub_g_ret$Caller_id)
     colnames(march_w_sub_g_ret) <- c("Caller ID", "Number of calls")
     
+    march_w_sub_g_ret <- na.omit(march_w_sub_g_ret)
     march_w_sub_g_ret
   })
   
@@ -532,7 +656,6 @@ server <- function(input, output) {
     longitude <- coordinates$lon
     latitude <- coordinates$lat
     radius <- input$input_recomm_radius
-    num_of_users <- as.numeric(input$input_recomm_num)
     number <- as.character(input$input_recomm_number)
     
     if(number == "") {
@@ -589,7 +712,7 @@ server <- function(input, output) {
       #return(nodes)
       
       # Cosine Similarity
-      call.data <- callData() 
+      #call.data <- callData() 
       
       # create their location vector's
       user_input <- user_vector(number)
@@ -600,7 +723,7 @@ server <- function(input, output) {
       
       #cat("Test:", nodes$caller_id)
       
-      for(i in 1:8) {    # length(nodes$caller_id)
+      for(i in 1:20) {    # nrow(nodes$caller_id) or 8
         #cat("Test:", length(nodes$caller_id), "  ")
         user <- nodes$caller_id[i]
         #cat("Test:", i," ",user, "  ")
@@ -616,10 +739,14 @@ server <- function(input, output) {
       
       recomm_users_new <- recomm_users[order(-recomm_users$similarity),]
       
-      colnames(recomm_users_new) <- c("Caller ID", "Similarity factor")
       rownames(recomm_users_new) <- 1:nrow(recomm_users_new)
       
-      recomm_users_new[1:num_of_users,]
+      recomm_users_new2 <- as.data.frame(recomm_users_new)
+      max <- nrow(recomm_users_new2)
+      
+      colnames(recomm_users_new2) <- c("Caller ID", "Similarity factor")
+      
+      recomm_users_new2[1:max,]
     }
   })
   
