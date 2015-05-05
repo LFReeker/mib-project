@@ -11,7 +11,6 @@ The git repository consists of a folder *code* which contains the code for prepr
 
 For this project we drafted a report, final presentation, datasets and a dashboard.
 - [Final Report](www.github.com)
-- [Call dataset](http://larsreeker.nl/mib/taian_march_calldata.csv) and [Cell Tower dataset](http://larsreeker.nl/mib/taian_celltower_locations.csv)
 - [Dashboard](https://larsreeker.shinyapps.io/MIB_Dashboard)
 
 ###### We hope you enjoy our project!
