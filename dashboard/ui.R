@@ -151,13 +151,7 @@ body <- dashboardBody(
             fluidRow(
               column(12, align="center",
                      tags$img(src = "heinz2.png"),
-                     h1("Welcome to the Tai'an dashboard!"),
-                     tags$br(),
-                     tags$br(),
-                     tags$br(),
-                     h5("Click ", tags$a(href="http://larsreeker.nl/mib/taian_march_calldata.csv", "here "), "to download the mobile phone call dataset"),
-                     h5("Click ", tags$a(href="http://larsreeker.nl/mib/taian_celltower_locations.csv", "here "), "to download the celltower locations dataset")
-                     )
+                     h1("Welcome to the Tai'an dashboard!"))
             )
             
     ),
